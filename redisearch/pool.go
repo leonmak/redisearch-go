@@ -16,10 +16,14 @@ type SingleHostPool struct {
 	*redis.Pool
 }
 
-func NewSingleHostPool(host string) *SingleHostPool {
+func NewSingleHostPool(opts ClientOptions) *SingleHostPool {
 	ret := redis.NewPool(func() (redis.Conn, error) {
 		// TODO: Add timeouts. and 2 separate pools for indexing and querying, with different timeouts
-		return redis.Dial("tcp", host)
+		if opts.Password != "" {
+			return redis.Dial("tcp", opts.Addr, redis.DialPassword(opts.Password))
+		}
+		return redis.Dial("tcp", opts.Addr)
+
 	}, maxConns)
 	ret.TestOnBorrow = func(c redis.Conn, t time.Time) (err error) {
 		if time.Since(t) > time.Second {
