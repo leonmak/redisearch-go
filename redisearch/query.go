@@ -109,6 +109,14 @@ func (q Query) serialize() redis.Args {
 		args = args.Add("WITHSCORES")
 	}
 
+	if len(q.Filters) > 0 {
+		for _, filter := range q.Filters {
+			vals := filter.Values()
+			args = args.Add("FILTER")
+			args = args.AddFlat(vals)
+		}
+	}
+
 	if q.InKeys != nil {
 		args = args.Add("INKEYS", len(q.InKeys))
 		args = args.AddFlat(q.InKeys)
